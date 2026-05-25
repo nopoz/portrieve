@@ -1,0 +1,15 @@
+*
+!.gitignore
+!LICENSE
+!demo.gif
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
+!.dockerignore
+!portrieve.sh
+!.portainer_config.sample
+!README.md
+!openapi.yaml
+!Dockerfile
+!docker-entrypoint.sh
+!docker-compose.yml

@@ -1,0 +1,7 @@
+portainer_backups/
+.portainer_config
+.git/
+.gitignore
+*.md
+openapi.yaml
+docker-compose.yml
