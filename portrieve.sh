@@ -487,7 +487,7 @@ function ensure_networks() {
 	done
 }
 
-# Import a single stack from a directory (containing docker-compose.yml and
+# Import a single stack from a directory (containing a compose file and
 # optionally .env / stack_metadata.json) or explicit compose file.
 # Args: <compose_file> <name> <type> <swarm_id_hint> <metadata_endpoint_id> <networks_json_file> <env_file>
 function import_one_stack() {
@@ -595,16 +595,38 @@ function import_one_stack() {
 	fi
 }
 
+# Compose filenames portrieve recognizes, in Docker's precedence order.
+readonly COMPOSE_FILENAMES=(compose.yaml compose.yml docker-compose.yaml docker-compose.yml)
+
+# Echo the canonical compose file inside a directory (honoring the precedence
+# above), or return non-zero when the directory holds none.
+function compose_file_in() {
+	local dir=$1 name
+	for name in "${COMPOSE_FILENAMES[@]}"; do
+		if [[ -f "$dir/$name" ]]; then
+			printf '%s' "$dir/$name"
+			return 0
+		fi
+	done
+	return 1
+}
+
 # Import every stack found under a source backup tree
-# (source/<endpoint>/<stack>/docker-compose.yml).
+# (source/<endpoint>/<stack>/<compose file>). Any recognized compose filename is
+# matched; if a stack dir holds more than one, the precedence above decides.
 function import_from_tree() {
 	local source_dir=$1
 	local found=0
 	local compose stack_dir endpoint_dir stack_name networks_file meta type eid env_file
+	local -A seen_dirs
 
 	while IFS= read -r -d '' compose; do
-		found=1
 		stack_dir=$(dirname "$compose")
+		# One stack per directory, even if it contains several compose filenames.
+		[[ -n "${seen_dirs[$stack_dir]:-}" ]] && continue
+		seen_dirs[$stack_dir]=1
+		found=1
+		compose=$(compose_file_in "$stack_dir") || continue
 		endpoint_dir=$(dirname "$stack_dir")
 		stack_name=$(basename "$stack_dir")
 		networks_file="$endpoint_dir/networks.json"
@@ -619,10 +641,11 @@ function import_from_tree() {
 		fi
 
 		import_one_stack "$compose" "$stack_name" "$type" "$eid" "$networks_file" "$env_file" || true
-	done < <(find "$source_dir" -mindepth 1 -type f -name docker-compose.yml -print0)
+	done < <(find "$source_dir" -mindepth 1 -type f \
+		\( -name compose.yaml -o -name compose.yml -o -name docker-compose.yaml -o -name docker-compose.yml \) -print0)
 
 	if [[ "$found" -eq 0 ]]; then
-		warning "No docker-compose.yml files found under: $source_dir"
+		warning "No compose files found under: $source_dir"
 	fi
 }
 
@@ -655,7 +678,7 @@ function cmd_import() {
 		import_one_stack "$IMPORT_COMPOSE" "$IMPORT_NAME" "$STACK_TYPE_COMPOSE" "" "" "$env_guess"
 	elif [[ -n "$IMPORT_STACK_DIR" ]]; then
 		local stack_dir="$IMPORT_STACK_DIR"
-		local stack_name networks_file meta type eid
+		local stack_name networks_file meta type eid compose_file
 		stack_name=$(basename "$stack_dir")
 		networks_file="$(dirname "$stack_dir")/networks.json"
 		meta="$stack_dir/stack_metadata.json"
@@ -664,7 +687,11 @@ function cmd_import() {
 			type=$(jq -r '.Type // 2' "$meta")
 			eid=$(jq -r '.EndpointId // ""' "$meta")
 		fi
-		import_one_stack "$stack_dir/docker-compose.yml" "$stack_name" "$type" "$eid" "$networks_file" "$stack_dir/.env"
+		if ! compose_file=$(compose_file_in "$stack_dir"); then
+			error_msg "No compose file found in $stack_dir"
+			exit 1
+		fi
+		import_one_stack "$compose_file" "$stack_name" "$type" "$eid" "$networks_file" "$stack_dir/.env"
 	else
 		info "Importing from backup tree: $IMPORT_SOURCE"
 		import_from_tree "$IMPORT_SOURCE"
@@ -854,7 +881,8 @@ EXPORT OPTIONS:
 
 IMPORT OPTIONS:
   --source DIR      Import all stacks under a backup tree (default: portainer_backups)
-  --stack DIR       Import a single stack directory (contains docker-compose.yml)
+  --stack DIR       Import a single stack directory (contains a compose file:
+                    compose.yaml or docker-compose.yml)
   --compose FILE    Import a single explicit compose file (requires --name)
   --name NAME       Stack name (used with --compose)
   --endpoint ID|NAME  Target endpoint override (else uses metadata EndpointId)

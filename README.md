@@ -314,6 +314,36 @@ arbitrary compose file you provide.
 The three source modes are mutually exclusive and take precedence in this order:
 `--compose` → `--stack` → `--source`.
 
+`--stack` and `--source` recognize any standard compose filename (`compose.yaml`,
+`compose.yml`, `docker-compose.yaml`, `docker-compose.yml`); if a directory holds
+more than one, Docker's precedence order picks the winner.
+
+### Importing your own existing compose files
+
+You do not need a portrieve backup to import. Point `--compose` at any single
+file, or arrange a folder so each stack lives in its own subdirectory (the
+subdirectory name becomes the stack name) and bulk-import with `--source`:
+
+```text
+mystacks/
+├── grafana/compose.yaml
+├── immich/docker-compose.yml
+└── nginx/
+    ├── compose.yaml
+    └── .env
+```
+
+```bash
+# Bulk-import a folder of existing stacks onto endpoint 1
+./portrieve.sh import --source mystacks --endpoint 1
+
+# Or one file at a time (any filename), naming each stack explicitly
+./portrieve.sh import --compose ./grafana.yaml --name grafana --endpoint 1
+```
+
+A sibling `.env` next to a compose file is picked up automatically. Re-run with
+`--update` to reconcile changes; existing stacks are skipped otherwise.
+
 ### How import resolves things
 
 - **Endpoint:** `--endpoint` (id or name) wins; otherwise the `EndpointId` from a
