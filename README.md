@@ -1,7 +1,10 @@
 # Portrieve
 
+![Release](https://img.shields.io/github/v/release/nopoz/portrieve?sort=semver)
 ![License](https://img.shields.io/github/license/nopoz/portrieve)
+![Lint](https://github.com/nopoz/portrieve/actions/workflows/lint.yml/badge.svg)
 ![Publish](https://github.com/nopoz/portrieve/actions/workflows/publish.yml/badge.svg)
+[![ghcr.io](https://img.shields.io/badge/ghcr.io-nopoz%2Fportrieve-blue?logo=github)](https://github.com/nopoz/portrieve/pkgs/container/portrieve)
 
 **Back up, restore, and migrate [Portainer](https://www.portainer.io/) stacks as
 plain Docker Compose files.** Portrieve exports every stack from a Portainer
@@ -28,6 +31,22 @@ portrieve stacks       # list stacks
 ```
 
 ![Portrieve demo](demo.gif)
+
+## Contents
+
+- [Features](#features)
+- [Why Portrieve](#why-portrieve)
+- [Prerequisites](#prerequisites)
+- [Run with Docker](#run-with-docker)
+- [Run as a script](#run-as-a-script)
+- [Discovery commands](#discovery-commands)
+- [Export](#export)
+- [Installing yq](#installing-yq)
+- [Import](#import)
+- [Security notes](#security-notes)
+- [Troubleshooting](#troubleshooting)
+- [Disclaimer](#disclaimer)
+- [License](#license)
 
 ## Features
 
