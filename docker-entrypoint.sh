@@ -38,6 +38,12 @@ if [[ -n "${PUID:-}" || -n "${PGID:-}" ]]; then
 
 	if [[ -d "$BACKUP_DIR" ]]; then
 		umask_val="${PORTAINER_BACKUP_UMASK:-077}"
+		# A umask is 3-4 octal digits; an unquoted 077 in YAML arrives as 63 and
+		# would yield a world-readable 0604. Reject anything else, default to 077.
+		if [[ ! "$umask_val" =~ ^[0-7]{3,4}$ ]]; then
+			log_entry "ignoring invalid PORTAINER_BACKUP_UMASK='$umask_val'; using 077"
+			umask_val=077
+		fi
 		# Derive the modes the script's umask would produce for new files/dirs.
 		dir_mode=$(printf '%03o' "$(( 0777 & ~0"$umask_val" ))")
 		file_mode=$(printf '%03o' "$(( 0666 & ~0"$umask_val" ))")

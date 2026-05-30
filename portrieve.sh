@@ -234,6 +234,13 @@ function cmd_export() {
 	# an existing file's mode, so the tree is chmod'd to the matching modes at the
 	# end of the run as well.
 	local backup_umask="${PORTAINER_BACKUP_UMASK:-077}"
+	# A umask is 3-4 octal digits. Reject anything else and fall back to a safe
+	# default: an unquoted `077` in YAML is read as octal and reaches the
+	# container as `63`, which would otherwise compute a world-readable 0604.
+	if [[ ! "$backup_umask" =~ ^[0-7]{3,4}$ ]]; then
+		warning "Ignoring invalid PORTAINER_BACKUP_UMASK='$backup_umask' (want 3-4 octal digits like 077; quote it in YAML). Using 077."
+		backup_umask="077"
+	fi
 	local file_mode dir_mode
 	printf -v file_mode '%03o' "$(( 0666 & ~0"$backup_umask" ))"
 	printf -v dir_mode '%03o' "$(( 0777 & ~0"$backup_umask" ))"
