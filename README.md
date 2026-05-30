@@ -156,6 +156,8 @@ docker compose logs -f      # watch runs
 | `TZ` | Timezone the schedule is interpreted in (default UTC) |
 | `RUN_ON_START` | Also run once at container start (default `true`) |
 | `PORTAINER_BACKUP_DIR` | Backup directory inside the container (default `/backup`) |
+| `PUID` / `PGID` | Own the exported files as this user/group; the container reconciles the backup tree and drops privileges. Unset runs as root |
+| `PORTAINER_BACKUP_UMASK` | Umask for exported files (default `077`, owner-only; e.g. `027` for group read) |
 
 ## Run as a script
 
