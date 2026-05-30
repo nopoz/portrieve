@@ -228,8 +228,16 @@ function export_networks() {
 
 function cmd_export() {
 	# Exports hold secrets (.env, metadata), so keep them owner-only by default.
-	# PORTAINER_BACKUP_UMASK overrides (e.g. 027 for group read).
-	umask "${PORTAINER_BACKUP_UMASK:-077}"
+	# PORTAINER_BACKUP_UMASK overrides (e.g. 027 for group read). umask alone is
+	# not enough: some filesystems (e.g. Synology shared folders) stamp an
+	# inherited ACL on new files that overrides it, and `>` truncation preserves
+	# an existing file's mode, so the tree is chmod'd to the matching modes at the
+	# end of the run as well.
+	local backup_umask="${PORTAINER_BACKUP_UMASK:-077}"
+	local file_mode dir_mode
+	printf -v file_mode '%03o' "$(( 0666 & ~0"$backup_umask" ))"
+	printf -v dir_mode '%03o' "$(( 0777 & ~0"$backup_umask" ))"
+	umask "$backup_umask"
 	mkdir -p "$BACKUP_DIR"
 	LOG_FILE="${BACKUP_DIR}/export.log"
 	: > "${LOG_FILE}"  # truncate
@@ -355,6 +363,12 @@ function cmd_export() {
 			rm -rf "$edir"
 		fi
 	done < <(find "$BACKUP_DIR" -mindepth 1 -maxdepth 1 -type d -print0)
+
+	# Enforce secure modes on the whole tree. chmod is what actually sticks: umask
+	# is unreliable where inherited ACLs apply (e.g. Synology shared folders) and
+	# truncating writes keep an existing file's mode.
+	find "$BACKUP_DIR" -type d -exec chmod "$dir_mode" {} +
+	find "$BACKUP_DIR" -type f -exec chmod "$file_mode" {} +
 
 	success "All endpoints and stacks have been processed."
 	info "Backup location: $BACKUP_DIR"
