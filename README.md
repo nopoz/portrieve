@@ -159,6 +159,15 @@ docker compose logs -f      # watch runs
 | `PUID` / `PGID` | Own the exported files as this user/group; the container reconciles the backup tree and drops privileges. Unset runs as root |
 | `PORTAINER_BACKUP_UMASK` | Umask for exported files (default `077`, owner-only; e.g. `027` for group read) |
 
+Backups contain secrets (`.env` values, stack metadata), so exports are written
+owner-only by default. To own them as a specific user, set `PUID`/`PGID`; the
+container reconciles the existing tree and drops privileges before running.
+
+Quote the numeric values in YAML: `PORTAINER_BACKUP_UMASK: "077"`, `PUID: "1000"`.
+Unquoted, YAML reads a leading-zero number like `077` as octal, so the container
+receives `63` and derives a world-readable mode. Portrieve guards against this
+(it rejects a non-octal umask and falls back to `077`), but quoting is correct.
+
 ## Run as a script
 
 Prefer to run it directly on a host? Portrieve is a single Bash script
