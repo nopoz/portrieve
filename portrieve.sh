@@ -223,6 +223,9 @@ function export_networks() {
 }
 
 function cmd_export() {
+	# Exports hold secrets (.env, metadata), so keep them owner-only by default.
+	# PORTAINER_BACKUP_UMASK overrides (e.g. 027 for group read).
+	umask "${PORTAINER_BACKUP_UMASK:-077}"
 	mkdir -p "$BACKUP_DIR"
 	LOG_FILE="${BACKUP_DIR}/export.log"
 	: > "${LOG_FILE}"  # truncate
