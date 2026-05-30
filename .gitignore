@@ -3,6 +3,7 @@
 !LICENSE
 !demo.gif
 !.github/
+!.github/dependabot.yml
 !.github/workflows/
 !.github/workflows/*.yml
 !.dockerignore

@@ -2,7 +2,7 @@
 
 ![Release](https://img.shields.io/github/v/release/nopoz/portrieve?sort=semver)
 ![License](https://img.shields.io/github/license/nopoz/portrieve)
-![Lint](https://github.com/nopoz/portrieve/actions/workflows/lint.yml/badge.svg)
+![CI](https://github.com/nopoz/portrieve/actions/workflows/ci.yml/badge.svg)
 ![Publish](https://github.com/nopoz/portrieve/actions/workflows/publish.yml/badge.svg)
 [![ghcr.io](https://img.shields.io/badge/ghcr.io-nopoz%2Fportrieve-blue?logo=github)](https://github.com/nopoz/portrieve/pkgs/container/portrieve)
 
