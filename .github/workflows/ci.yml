@@ -77,6 +77,9 @@ jobs:
         uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5  # v3.3.0
         with:
           dockerfile: Dockerfile
+          # DL3018: pinning apk versions is impractical on Alpine, old versions
+          # are purged from the repo and break rebuilds. Base image is pinned.
+          ignore: DL3018
 
   gitleaks:
     name: gitleaks
@@ -121,7 +124,7 @@ jobs:
           tags: portrieve:ci
 
       - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8  # v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
         with:
           image-ref: portrieve:ci
           format: sarif
@@ -132,7 +135,7 @@ jobs:
           TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2
 
       - name: Upload Trivy results
-        uses: github/codeql-action/upload-sarif@051e2f90686233507fe9283ff167d2e709304b30  # v3.36.0
+        uses: github/codeql-action/upload-sarif@03e4368ac7daa2bd82b3e85262f3bf87ee112f57  # v3.36.0
         with:
           sarif_file: trivy-results.sarif
           category: trivy-image
