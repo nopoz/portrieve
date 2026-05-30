@@ -26,38 +26,42 @@ readonly COLOR_ERROR='\033[1;31m'
 readonly BOLD='\033[1m'
 readonly DIM='\033[2m'
 
+function timestamp() {
+	date '+%Y-%m-%d %H:%M:%S'
+}
+
 function log() {
 	local level=$1
 	local message=$2
-	local timestamp
-	timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 	# No file logging until a command sets LOG_FILE (only export does).
 	if [[ -n "$LOG_FILE" ]]; then
-		echo -e "${timestamp} ${level} ${message}" >> "${LOG_FILE}"
+		echo -e "$(timestamp) ${level} ${message}" >> "${LOG_FILE}"
 	fi
 }
 
+# Console helpers prefix a dim timestamp so `docker logs` (notably scheduled
+# cron runs) shows when each line ran; the file log timestamps separately.
 function info() {
 	local message=$1
-	echo -e "${COLOR_INFO}[INFO]${COLOR_RESET} $message"
+	echo -e "${DIM}$(timestamp)${COLOR_RESET} ${COLOR_INFO}[INFO]${COLOR_RESET} $message"
 	log "INFO" "$message"
 }
 
 function success() {
 	local message=$1
-	echo -e "${COLOR_SUCCESS}[SUCCESS]${COLOR_RESET} $message"
+	echo -e "${DIM}$(timestamp)${COLOR_RESET} ${COLOR_SUCCESS}[SUCCESS]${COLOR_RESET} $message"
 	log "SUCCESS" "$message"
 }
 
 function warning() {
 	local message=$1
-	echo -e "${COLOR_WARNING}[WARNING]${COLOR_RESET} $message" >&2
+	echo -e "${DIM}$(timestamp)${COLOR_RESET} ${COLOR_WARNING}[WARNING]${COLOR_RESET} $message" >&2
 	log "WARNING" "$message"
 }
 
 function error_msg() {
 	local message=$1
-	echo -e "${COLOR_ERROR}[ERROR]${COLOR_RESET} $message" >&2
+	echo -e "${DIM}$(timestamp)${COLOR_RESET} ${COLOR_ERROR}[ERROR]${COLOR_RESET} $message" >&2
 	log "ERROR" "$message"
 }
 
