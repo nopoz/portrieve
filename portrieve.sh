@@ -160,6 +160,13 @@ function load_config() {
 	fi
 
 	validate_url "$portainer_url"
+
+	# Opt-in TLS skip for Portainer behind a self-signed/private cert. Off by
+	# default; any value other than true/1/yes keeps verification on.
+	INSECURE_CURL=()
+	case "${PORTAINER_INSECURE:-}" in
+		true|1|yes) INSECURE_CURL=(--insecure) ;;
+	esac
 }
 
 # make_api_request <endpoint> [method] [body]
@@ -180,6 +187,7 @@ function make_api_request() {
 	while [[ $attempt -le $retries ]]; do
 		curl_args=(-s --fail --location -X "$method"
 			--connect-timeout 10
+			"${INSECURE_CURL[@]}"
 			--header "X-API-Key: $api_key"
 			--header 'Accept: application/json')
 		if [[ -n "$body" ]]; then
@@ -833,10 +841,10 @@ function cmd_test() {
 	[[ "$OUTPUT_JSON" != true ]] && info "Testing connection to $portainer_url"
 
 	# Single attempt (no retry/backoff) so a bad key/URL fails fast.
-	local body http
-	body=$(curl -s --max-time 10 -w $'\n%{http_code}' \
+	local body http curl_rc=0
+	body=$(curl -s --max-time 10 -w $'\n%{http_code}' "${INSECURE_CURL[@]}" \
 		-H "X-API-Key: $api_key" -H 'Accept: application/json' \
-		"$portainer_url/endpoints" 2>/dev/null) || true
+		"$portainer_url/endpoints" 2>/dev/null) || curl_rc=$?
 	http=$(printf '%s' "$body" | tail -n1)
 	body=$(printf '%s' "$body" | sed '$d')
 
@@ -846,11 +854,18 @@ function cmd_test() {
 			ok=true
 			ep_count=$(printf '%s' "$body" | jq 'length' 2>/dev/null || echo "?")
 			local stacks_json
-			stacks_json=$(curl -s --max-time 10 -H "X-API-Key: $api_key" -H 'Accept: application/json' "$portainer_url/stacks" 2>/dev/null || echo "[]")
+			stacks_json=$(curl -s --max-time 10 "${INSECURE_CURL[@]}" -H "X-API-Key: $api_key" -H 'Accept: application/json' "$portainer_url/stacks" 2>/dev/null || echo "[]")
 			stack_count=$(printf '%s' "$stacks_json" | jq 'length' 2>/dev/null || echo "?")
 			;;
 		401|403) reason="authentication failed (HTTP $http); check api_key" ;;
-		000|"")  reason="could not reach $portainer_url; check URL/network" ;;
+		000|"")
+			# curl exit 60 = TLS cert verification failed. Point at the opt-out.
+			if [[ $curl_rc -eq 60 ]]; then
+				reason="TLS certificate verification failed for $portainer_url; set PORTAINER_INSECURE=true to skip verification (self-signed/private cert)"
+			else
+				reason="could not reach $portainer_url; check URL/network"
+			fi
+			;;
 		*)       reason="unexpected response (HTTP $http)" ;;
 	esac
 

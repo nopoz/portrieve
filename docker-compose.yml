@@ -19,6 +19,7 @@ services:
       SCHEDULE: "0 3 * * *"      # daily at 03:00 (cron syntax)
       TZ: "UTC"                  # schedule honours this timezone
       RUN_ON_START: "true"       # also export once when the container starts
+      # PORTAINER_INSECURE: "true"  # skip TLS verify for a self-signed/private cert
       # Backups hold secrets (.env, metadata). Files are owner-only (umask 077)
       # by default. Quote these values: unquoted, YAML reads a leading-zero
       # number like 077 as octal (63) and the container gets the wrong value.
