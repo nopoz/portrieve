@@ -1,4 +1,4 @@
-FROM alpine:3.23
+FROM alpine:3.24
 
 # bash for the scripts, curl/jq for the API, yq (mikefarah, from the community
 # repo) for compose parsing, tzdata so cron schedules honour TZ, su-exec to drop
