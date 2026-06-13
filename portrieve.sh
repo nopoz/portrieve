@@ -162,11 +162,11 @@ function load_config() {
 	validate_url "$portainer_url"
 
 	# Opt-in TLS skip for Portainer behind a self-signed/private cert. Off by
-	# default; any value other than true/1/yes keeps verification on.
+	# default; only the exact value "true" keeps verification off.
 	INSECURE_CURL=()
-	case "${PORTAINER_INSECURE:-}" in
-		true|1|yes) INSECURE_CURL=(--insecure) ;;
-	esac
+	if [[ "${PORTAINER_INSECURE:-}" == "true" ]]; then
+		INSECURE_CURL=(--insecure)
+	fi
 }
 
 # make_api_request <endpoint> [method] [body]

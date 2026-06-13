@@ -152,7 +152,7 @@ docker compose logs -f      # watch runs
 |----------|---------|
 | `PORTAINER_URL` | Portainer API URL (include the `/api` suffix) |
 | `PORTAINER_API_KEY` | Portainer API access token |
-| `PORTAINER_INSECURE` | Set `true`/`1`/`yes` to skip TLS verification for a self-signed or private cert (default off) |
+| `PORTAINER_INSECURE` | Set `true` to skip TLS verification for a self-signed or private cert (default off) |
 | `SCHEDULE` | Cron expression; when set, the command runs on this schedule |
 | `TZ` | Timezone the schedule is interpreted in (default UTC) |
 | `RUN_ON_START` | Also run once at container start (default `true`) |
