@@ -46,6 +46,8 @@ portrieve stacks       # list stacks
 - [Security notes](#security-notes)
 - [Troubleshooting](#troubleshooting)
 - [Disclaimer](#disclaimer)
+- [More of my projects](#more-of-my-projects)
+- [Support](#support)
 - [License](#license)
 
 ## Features
@@ -440,6 +442,17 @@ details are host-specific and may need attention:
 Provided as-is, without warranty. Import creates and updates real stacks on your
 Portainer instance; always run with `--dry-run` first to review what will happen,
 and verify you have backups before using `--update` against live environments.
+
+## More of my projects
+
+Other open-source tools I maintain that you might find useful:
+
+- [**Hosaka**](https://github.com/nopoz/hosaka) - Docker image update monitor with notifications and one-click updates.
+- [**pfSense DNSCrypt Proxy**](https://github.com/nopoz/pfsense-dnscrypt-proxy) - a pfSense package for DNSCrypt Proxy: encrypted DNS with full GUI support.
+
+## Support
+
+If Portrieve is useful to you, please [star it on GitHub](https://github.com/nopoz/portrieve) to support the project.
 
 ## License
 
